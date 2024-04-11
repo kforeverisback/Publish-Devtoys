@@ -24,7 +24,7 @@ internal class Build : NukeBuild
     ///   - Microsoft VisualStudio     https://nuke.build/visualstudio
     ///   - Microsoft VSCode           https://nuke.build/vscode
 
-    public static int Main() => Execute<Build>(x => x.Publish);
+    public static int Main() => Execute<Build>(x => x.CompilePublishBinaries);
 
     [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
     private readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
@@ -40,7 +40,7 @@ internal class Build : NukeBuild
 
     public Target Clean => _ => _
         .Executes(
-            () => CleanTask.Run(Submodules));
+            () => CleanTask.Run(RootDirectory, Submodules));
 
     public Target UpdateSubmodules => _ => _
         .DependsOn(Clean)
@@ -79,10 +79,9 @@ internal class Build : NukeBuild
         .Executes(
             () => TestTask.Run(Submodules, Configuration));
 
-    public Target Publish => _ => _
+    public Target CompilePublishBinaries => _ => _
         .DependsOn(RunTests)
         .Description(description: "Generate publish artifacts.")
-        .Executes(() =>
-        {
-        });
+        .Executes(
+            () => CompilePublishBinariesTask.Run(RootDirectory, Submodules, Configuration));
 }

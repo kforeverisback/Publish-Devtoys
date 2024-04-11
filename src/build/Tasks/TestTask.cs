@@ -21,7 +21,7 @@ internal static class TestTask
 
     private static void RunTestProject(AbsolutePath projectPath, Configuration configuration)
     {
-        Log.Information("Running tests from {Value}.", projectPath);
+        Log.Information("Running tests from {Value}.", projectPath.Name);
 
         DotNetTest(s => s
             .SetProjectFile(projectPath)
@@ -29,5 +29,6 @@ internal static class TestTask
             .SetVerbosity(DotNetVerbosity.quiet));
 
         Log.Information("Tests completed.");
+        Log.Information(string.Empty);
     }
 }

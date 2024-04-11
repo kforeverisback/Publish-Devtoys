@@ -6,7 +6,7 @@ namespace Tasks;
 
 internal static class CleanTask
 {
-    internal static void Run(SubmoduleBase[] submodules)
+    internal static void Run(AbsolutePath rootDirectory, SubmoduleBase[] submodules)
     {
         foreach (SubmoduleBase submodule in submodules)
         {
@@ -17,6 +17,12 @@ internal static class CleanTask
                 directory.CreateOrCleanDirectory();
                 Log.Information("Deleted {Value} directory.", directory);
             }
+        }
+
+        foreach (AbsolutePath directory in rootDirectory.GlobDirectories("bin", "obj", "packages", "publish"))
+        {
+            directory.CreateOrCleanDirectory();
+            Log.Information("Deleted {Value} directory.", directory);
         }
     }
 }

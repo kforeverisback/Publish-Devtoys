@@ -36,4 +36,6 @@ internal abstract class SubmoduleBase
     {
         return RepositoryDirectory.GlobFiles("**/*Tests.csproj");
     }
+
+    internal abstract IEnumerable<PublishBinariesBuilder> GetPublishBinariesBuilder();
 }

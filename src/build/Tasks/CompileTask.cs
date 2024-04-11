@@ -22,7 +22,7 @@ internal static class CompileTask
 
     private static void BuildSolution(AbsolutePath solutionPath, Configuration configuration)
     {
-        Log.Information("Compiling {Value} solution.", solutionPath);
+        Log.Information("Compiling {Value} solution.", solutionPath.Name);
 
         Solution solution = solutionPath.ReadSolution();
 
@@ -32,5 +32,6 @@ internal static class CompileTask
             .SetVerbosity(DotNetVerbosity.quiet));
 
         Log.Information("Compilation completed.");
+        Log.Information(string.Empty);
     }
 }
