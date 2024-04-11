@@ -1,7 +1,7 @@
-using System;
-using System.ComponentModel;
-using System.Linq;
+﻿using System.ComponentModel;
 using Nuke.Common.Tooling;
+
+namespace Core;
 
 [TypeConverter(typeof(TypeConverter<Configuration>))]
 public class Configuration : Enumeration

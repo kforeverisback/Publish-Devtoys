@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Core;
 using Nuke.Common;
 using Nuke.Common.CI;
 using Nuke.Common.Execution;
@@ -23,7 +24,7 @@ internal class Build : NukeBuild
     ///   - Microsoft VisualStudio     https://nuke.build/visualstudio
     ///   - Microsoft VSCode           https://nuke.build/vscode
 
-    public static int Main() => Execute<Build>(x => x.Compile);
+    public static int Main() => Execute<Build>(x => x.Publish);
 
     [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
     private readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
@@ -31,14 +32,15 @@ internal class Build : NukeBuild
     [GitRepository]
     private readonly GitRepository Repository;
 
+    private SubmoduleBase[] Submodules { get; } =
+    {
+        new Submodules.DevToys.DevToysSubmodule(RootDirectory),
+        new Submodules.DevToysTools.DevToysToolsSubmodule(RootDirectory)
+    };
+
     public Target Clean => _ => _
-        .Executes(() =>
-        {
-            RootDirectory
-                .GlobDirectories("bin", "obj", "packages", "publish")
-                .ForEach(path => path.CreateOrCleanDirectory());
-            Log.Information("Cleaned bin, obj, packages and publish folders.");
-        });
+        .Executes(
+            () => CleanTask.Run(Submodules));
 
     public Target UpdateSubmodules => _ => _
         .DependsOn(Clean)
@@ -63,21 +65,19 @@ internal class Build : NukeBuild
         .DependsOn(UpdateSubmodules)
         .Description("Restore various dependencies.")
         .Executes(
-            () => InitScriptTask.RunAsync(RootDirectory));
+            () => RestoreTask.RunAsync(Submodules));
 
     public Target Compile => _ => _
         .DependsOn(RestoreDependencies)
         .Description("Build solutions.")
-        .Executes(() =>
-        {
-        });
+        .Executes(
+            () => CompileTask.Run(Submodules, Configuration));
 
     public Target RunTests => _ => _
         .DependsOn(Compile)
         .Description("Run tests.")
-        .Executes(() =>
-        {
-        });
+        .Executes(
+            () => TestTask.Run(Submodules, Configuration));
 
     public Target Publish => _ => _
         .DependsOn(RunTests)
