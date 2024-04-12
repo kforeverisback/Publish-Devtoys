@@ -101,7 +101,7 @@ internal sealed class DevToysSubmodule : SubmoduleBase
             }
             else if (builder is GuiWindowsPublishBinariesBuilder guiWindowsPublishBinariesBuilder)
             {
-                GuiPackingWindows.Pack(packDirectory, guiWindowsPublishBinariesBuilder);
+                GuiPackingWindows.Pack(packDirectory, RepositoryDirectory, guiWindowsPublishBinariesBuilder);
             }
             // TODO: Mac and Linux GUI
 
