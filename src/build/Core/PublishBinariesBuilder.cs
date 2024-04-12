@@ -17,5 +17,7 @@ internal abstract class PublishBinariesBuilder
 
     internal bool SelfContained { get; }
 
-    internal abstract void Build(AbsolutePath outputDirectory, Configuration configuration);
+    public AbsolutePath? OutputPath { get; protected set; }
+
+    internal abstract void Build(AbsolutePath publishDirectory, Configuration configuration);
 }

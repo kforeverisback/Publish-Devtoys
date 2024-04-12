@@ -15,9 +15,4 @@ internal sealed class DevToysToolsSubmodule : SubmoduleBase
     {
         yield return RepositoryDirectory / "src" / "DevToys.Tools.sln";
     }
-
-    internal override IEnumerable<PublishBinariesBuilder> GetPublishBinariesBuilder()
-    {
-        yield break;
-    }
 }

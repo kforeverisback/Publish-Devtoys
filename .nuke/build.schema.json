@@ -74,8 +74,9 @@
             "enum": [
               "Clean",
               "Compile",
-              "CompilePublishBinaries",
-              "RestoreDependencies",
+              "CompilePublishBits",
+              "Pack",
+              "Restore",
               "RunTests",
               "UpdateSubmodules"
             ]
@@ -89,8 +90,9 @@
             "enum": [
               "Clean",
               "Compile",
-              "CompilePublishBinaries",
-              "RestoreDependencies",
+              "CompilePublishBits",
+              "Pack",
+              "Restore",
               "RunTests",
               "UpdateSubmodules"
             ]

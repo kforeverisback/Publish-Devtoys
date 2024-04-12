@@ -4,15 +4,15 @@ using Nuke.Common.IO;
 
 namespace Tasks;
 
-internal static class CompilePublishBinariesTask
+internal static class PackPublishBinariesTask
 {
     internal static async ValueTask RunAsync(AbsolutePath rootDirectory, SubmoduleBase[] submodules, Configuration configuration)
     {
-        AbsolutePath publishDirectory = rootDirectory / "publish";
+        AbsolutePath artifactDirectory = rootDirectory / "artifacts";
 
         foreach (SubmoduleBase submodule in submodules)
         {
-            await submodule.BuildPublishBinariesAsync(publishDirectory, configuration);
+            await submodule.PackPublishBinariesAsync(artifactDirectory, configuration);
         }
     }
 }

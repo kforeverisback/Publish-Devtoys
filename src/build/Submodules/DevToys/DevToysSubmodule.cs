@@ -1,15 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
 using System.Threading.Tasks;
 using Core;
 using Helper;
 using Nuke.Common.IO;
+using Serilog;
+using Submodules.DevToys.Packing;
+using Submodules.DevToys.PublishBinariesBuilders;
 using static Core.TargetCpuArchitecture;
 
 namespace Submodules.DevToys;
 
 internal sealed class DevToysSubmodule : SubmoduleBase
 {
+    private ImmutableArray<PublishBinariesBuilder> publishBinariesBuilders = ImmutableArray<PublishBinariesBuilder>.Empty;
+
     public DevToysSubmodule(AbsolutePath repositoryDirectory)
         : base("DevToys", repositoryDirectory / "submodules" / "DevToys")
     {
@@ -37,26 +44,79 @@ internal sealed class DevToysSubmodule : SubmoduleBase
         }
     }
 
-    internal override IEnumerable<PublishBinariesBuilder> GetPublishBinariesBuilder()
+    internal override ValueTask BuildPublishBinariesAsync(AbsolutePath publishDirectory, Configuration configuration)
     {
         if (OperatingSystem.IsMacOS())
         {
-            return GetMacOSProjectsToPublish();
+            this.publishBinariesBuilders = GetMacOSProjectsToPublish().ToImmutableArray();
         }
         else if (OperatingSystem.IsWindows())
         {
-            return GetWindowsProjectsToPublish();
+            this.publishBinariesBuilders = GetWindowsProjectsToPublish().ToImmutableArray();
         }
         else if (OperatingSystem.IsLinux())
         {
-            return GetLinuxProjectsToPublish();
+            this.publishBinariesBuilders = GetLinuxProjectsToPublish().ToImmutableArray();
         }
 
-        return Array.Empty<PublishBinariesBuilder>();
+        foreach (PublishBinariesBuilder builder in this.publishBinariesBuilders)
+        {
+            Log.Information(
+                "Building {PublishBinariesBuilderName} for {Architecture} (self-contained: {SelfContained})",
+                builder.Name,
+                builder.Architecture.RuntimeIdentifier,
+                builder.SelfContained);
+
+            builder.Build(publishDirectory, configuration);
+
+            Log.Information(string.Empty);
+        }
+
+        return ValueTask.CompletedTask;
+    }
+
+    internal override ValueTask PackPublishBinariesAsync(AbsolutePath packDirectory, Configuration configuration)
+    {
+        foreach (PublishBinariesBuilder builder in this.publishBinariesBuilders)
+        {
+            Log.Information(
+                "Packing {PublishBinariesBuilderName} for {Architecture} (self-contained: {SelfContained})",
+                builder.Name,
+                builder.Architecture.RuntimeIdentifier,
+                builder.SelfContained);
+
+            if (builder is CliPublishBinariesBuilder cliPublishBinariesBuilder)
+            {
+                if (OperatingSystem.IsMacOS())
+                {
+                    // TODO
+                }
+                else if (OperatingSystem.IsWindows())
+                {
+                    CliPackingWindows.Pack(packDirectory, cliPublishBinariesBuilder);
+                }
+                else if (OperatingSystem.IsLinux())
+                {
+                    // TODO
+                }
+            }
+            else if (builder is GuiWindowsPublishBinariesBuilder guiWindowsPublishBinariesBuilder)
+            {
+                GuiPackingWindows.Pack(guiWindowsPublishBinariesBuilder);
+            }
+            // TODO: Mac and Linux GUI
+
+            Log.Information(string.Empty);
+        }
+
+        return ValueTask.CompletedTask;
     }
 
     private IEnumerable<PublishBinariesBuilder> GetMacOSProjectsToPublish()
     {
+        // GUI
+        // TODO
+
         // CLI
         yield return new CliPublishBinariesBuilder(RepositoryDirectory, MacOs_X64, selfContained: true);
         yield return new CliPublishBinariesBuilder(RepositoryDirectory, MacOs_Arm64, selfContained: true);
@@ -88,6 +148,9 @@ internal sealed class DevToysSubmodule : SubmoduleBase
 
     private IEnumerable<PublishBinariesBuilder> GetLinuxProjectsToPublish()
     {
+        // GUI
+        // TODO
+
         // CLI
         yield return new CliPublishBinariesBuilder(RepositoryDirectory, Linux_X64, selfContained: true);
         yield return new CliPublishBinariesBuilder(RepositoryDirectory, Linux_Arm, selfContained: true);

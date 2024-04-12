@@ -24,13 +24,15 @@ internal class Build : NukeBuild
     ///   - Microsoft VisualStudio     https://nuke.build/visualstudio
     ///   - Microsoft VSCode           https://nuke.build/vscode
 
-    public static int Main() => Execute<Build>(x => x.CompilePublishBinaries);
+    public static int Main() => Execute<Build>(x => x.Pack);
 
     [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
     private readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     [GitRepository]
     private readonly GitRepository Repository;
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
     private SubmoduleBase[] Submodules { get; } =
     {
@@ -61,14 +63,14 @@ internal class Build : NukeBuild
             await GitTask.UpdateSubmodulesAsync();
         });
 
-    public Target RestoreDependencies => _ => _
+    public Target Restore => _ => _
         .DependsOn(UpdateSubmodules)
-        .Description("Restore various dependencies.")
+        .Description("Restore dependencies.")
         .Executes(
             () => RestoreTask.RunAsync(Submodules));
 
     public Target Compile => _ => _
-        .DependsOn(RestoreDependencies)
+        .DependsOn(Restore)
         .Description("Build solutions.")
         .Executes(
             () => CompileTask.Run(Submodules, Configuration));
@@ -79,9 +81,15 @@ internal class Build : NukeBuild
         .Executes(
             () => TestTask.Run(Submodules, Configuration));
 
-    public Target CompilePublishBinaries => _ => _
+    public Target CompilePublishBits => _ => _
         .DependsOn(RunTests)
         .Description(description: "Generate publish artifacts.")
         .Executes(
-            () => CompilePublishBinariesTask.Run(RootDirectory, Submodules, Configuration));
+            () => CompilePublishBinariesTask.RunAsync(RootDirectory, Submodules, Configuration));
+
+    public Target Pack => _ => _
+        .DependsOn(CompilePublishBits)
+        .Description(description: "Generate packages & installers.")
+        .Executes(
+            () => PackPublishBinariesTask.RunAsync(RootDirectory, Submodules, Configuration));
 }

@@ -6,26 +6,24 @@ using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
-namespace Submodules.DevToys;
+namespace Submodules.DevToys.PublishBinariesBuilders;
 
-internal sealed class GuiWindowsPublishBinariesBuilder : PublishBinariesBuilder
+internal sealed class CliPublishBinariesBuilder : PublishBinariesBuilder
 {
     private readonly AbsolutePath _projectPath;
 
-    private AbsolutePath? _outputPath;
-
-    public GuiWindowsPublishBinariesBuilder(
+    public CliPublishBinariesBuilder(
         AbsolutePath submodulePath,
         TargetCpuArchitecture architecture,
         bool selfContained)
-        : base("DevToys GUI (Windows)", architecture, selfContained)
+        : base("DevToys CLI", architecture, selfContained)
     {
-        _projectPath = submodulePath / "src" / "app" / "dev" / "platforms" / "desktop" / "DevToys.Windows" / "DevToys.Windows.csproj";
+        _projectPath = submodulePath / "src" / "app" / "dev" / "platforms" / "desktop" / "DevToys.CLI" / "DevToys.CLI.csproj";
     }
 
-    internal override void Build(AbsolutePath outputDirectory, Configuration configuration)
+    internal override void Build(AbsolutePath publishDirectory, Configuration configuration)
     {
-        _outputPath = outputDirectory / $"{_projectPath.NameWithoutExtension}-{Architecture.RuntimeIdentifier}{(SelfContained ? "-portable" : "")}";
+        AbsolutePath outputPath = publishDirectory / $"{_projectPath.NameWithoutExtension}-{Architecture.RuntimeIdentifier}{(SelfContained ? "-portable" : "")}";
 
         Microsoft.Build.Evaluation.Project project = ProjectModelTasks.ParseProject(_projectPath);
         ProjectProperty targetFramework = project.GetProperty("TargetFramework");
@@ -38,14 +36,14 @@ internal sealed class GuiWindowsPublishBinariesBuilder : PublishBinariesBuilder
             .SetRuntime(Architecture.RuntimeIdentifier)
             .SetPlatform(Architecture.PlatformTarget)
             .SetSelfContained(SelfContained)
-            .SetPublishSingleFile(false)
+            .SetPublishSingleFile(SelfContained)
             .SetPublishReadyToRun(false)
             .SetPublishTrimmed(false)
             .SetVerbosity(DotNetVerbosity.quiet)
             .SetProcessArgumentConfigurator(_ => _
-                .Add("/p:RuntimeIdentifierOverride=" + Architecture.RuntimeIdentifier)
-                .Add("/p:Unpackaged=" + SelfContained)
-                .Add($"/bl:\"{_outputPath}.binlog\""))
-            .SetOutput(_outputPath));
+                .Add($"/bl:\"{outputPath}.binlog\""))
+            .SetOutput(outputPath));
+
+        OutputPath = outputPath;
     }
 }

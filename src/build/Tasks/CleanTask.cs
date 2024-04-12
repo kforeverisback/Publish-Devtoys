@@ -19,7 +19,7 @@ internal static class CleanTask
             }
         }
 
-        foreach (AbsolutePath directory in rootDirectory.GlobDirectories("bin", "obj", "packages", "publish"))
+        foreach (AbsolutePath directory in rootDirectory.GlobDirectories("bin", "obj", "packages", "publish", "artifacts"))
         {
             directory.CreateOrCleanDirectory();
             Log.Information("Deleted {Value} directory.", directory);
