@@ -1,4 +1,5 @@
 ﻿using Nuke.Common.IO;
+using Serilog;
 using Submodules.DevToys.PublishBinariesBuilders;
 
 namespace Submodules.DevToys.Packing;
@@ -7,13 +8,15 @@ internal static class CliPackingWindows
 {
     internal static void Pack(AbsolutePath packDirectory, CliPublishBinariesBuilder cliPublishBinariesBuilder)
     {
+        Log.Information("Zipping DevToys CLI {architecutre} (self-contained: {portable})...", cliPublishBinariesBuilder.Architecture.RuntimeIdentifier, cliPublishBinariesBuilder.SelfContained);
+
         string portable = string.Empty;
         if (cliPublishBinariesBuilder.SelfContained)
         {
-            portable = ".portable";
+            portable = "_portable";
         }
 
-        AbsolutePath archiveFile = packDirectory / $"DevToys-CLI.{cliPublishBinariesBuilder.Architecture.PlatformTarget}{portable}.zip";
+        AbsolutePath archiveFile = packDirectory / $"devtoys_cli_{cliPublishBinariesBuilder.Architecture.RuntimeIdentifier}{portable}.zip";
 
         if (cliPublishBinariesBuilder.OutputPath.DirectoryExists())
         {
@@ -23,5 +26,7 @@ internal static class CliPackingWindows
                 compressionLevel: System.IO.Compression.CompressionLevel.SmallestSize,
                 fileMode: System.IO.FileMode.Create);
         }
+
+        Log.Information(string.Empty);
     }
 }

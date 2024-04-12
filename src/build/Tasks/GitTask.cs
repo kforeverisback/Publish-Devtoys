@@ -8,12 +8,20 @@ internal static class GitTask
 {
     internal static async Task UpdateSubmodulesAsync()
     {
-        Log.Information("Clone submodules.");
-        await ShellHelper.RunCommandAsync("git submodule update --init --recursive");
+        try
+        {
+            Log.Information("Clone submodules.");
+            await ShellHelper.RunCommandAsync("git submodule update --init --recursive");
 
-        Log.Information("Update submodules to the latest commit.");
-        await ShellHelper.RunCommandAsync("git submodule update --remote --merge");
+            Log.Information("Update submodules to the latest commit.");
+            await ShellHelper.RunCommandAsync("git submodule update --remote --merge");
 
-        Log.Information("Submodules updated. You may need to push the changes.");
+            Log.Information("Submodules updated. You may need to push the changes.");
+        }
+        catch (System.Exception exception)
+        {
+            Log.Error(exception, "An error occurred while updating the submodules.");
+            throw;
+        }
     }
 }

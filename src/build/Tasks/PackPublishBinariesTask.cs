@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Core;
 using Nuke.Common.IO;
+using Serilog;
 
 namespace Tasks;
 
@@ -8,11 +9,19 @@ internal static class PackPublishBinariesTask
 {
     internal static async ValueTask RunAsync(AbsolutePath rootDirectory, SubmoduleBase[] submodules, Configuration configuration)
     {
-        AbsolutePath artifactDirectory = rootDirectory / "artifacts";
-
-        foreach (SubmoduleBase submodule in submodules)
+        try
         {
-            await submodule.PackPublishBinariesAsync(artifactDirectory, configuration);
+            AbsolutePath artifactDirectory = rootDirectory / "artifacts";
+
+            foreach (SubmoduleBase submodule in submodules)
+            {
+                await submodule.PackPublishBinariesAsync(artifactDirectory, configuration);
+            }
+        }
+        catch (System.Exception exception)
+        {
+            Log.Error(exception, "An error occurred while packing the publishing binaries.");
+            throw;
         }
     }
 }

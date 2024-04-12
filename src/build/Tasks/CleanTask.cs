@@ -1,4 +1,5 @@
-﻿using Core;
+﻿using System;
+using Core;
 using Nuke.Common.IO;
 using Serilog;
 
@@ -8,21 +9,29 @@ internal static class CleanTask
 {
     internal static void Run(AbsolutePath rootDirectory, SubmoduleBase[] submodules)
     {
-        foreach (SubmoduleBase submodule in submodules)
+        try
         {
-            Log.Information("Cleaning {Value} repository.", submodule.Name);
+            foreach (SubmoduleBase submodule in submodules)
+            {
+                Log.Information("Cleaning {Value} repository.", submodule.Name);
 
-            foreach (AbsolutePath directory in submodule.GetDirectoriesToClean())
+                foreach (AbsolutePath directory in submodule.GetDirectoriesToClean())
+                {
+                    directory.CreateOrCleanDirectory();
+                    Log.Information("Deleted {Value} directory.", directory);
+                }
+            }
+
+            foreach (AbsolutePath directory in rootDirectory.GlobDirectories("bin", "obj", "packages", "publish", "artifacts"))
             {
                 directory.CreateOrCleanDirectory();
                 Log.Information("Deleted {Value} directory.", directory);
             }
         }
-
-        foreach (AbsolutePath directory in rootDirectory.GlobDirectories("bin", "obj", "packages", "publish", "artifacts"))
+        catch (Exception exception)
         {
-            directory.CreateOrCleanDirectory();
-            Log.Information("Deleted {Value} directory.", directory);
+            Log.Error(exception, "An error occurred while cleaning the repository.");
+            throw;
         }
     }
 }

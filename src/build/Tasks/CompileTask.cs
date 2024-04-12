@@ -11,12 +11,20 @@ internal static class CompileTask
 {
     internal static void Run(SubmoduleBase[] submodules, Configuration configuration)
     {
-        foreach (SubmoduleBase submodule in submodules)
+        try
         {
-            foreach (AbsolutePath solution in submodule.GetSolutions())
+            foreach (SubmoduleBase submodule in submodules)
             {
-                BuildSolution(solution, configuration);
+                foreach (AbsolutePath solution in submodule.GetSolutions())
+                {
+                    BuildSolution(solution, configuration);
+                }
             }
+        }
+        catch (System.Exception exception)
+        {
+            Log.Error(exception, "An error occurred while compiling the solutions.");
+            throw;
         }
     }
 

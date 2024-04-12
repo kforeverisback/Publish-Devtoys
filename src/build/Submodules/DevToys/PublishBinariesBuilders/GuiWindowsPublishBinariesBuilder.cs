@@ -14,16 +14,15 @@ internal sealed class GuiWindowsPublishBinariesBuilder : PublishBinariesBuilder
 
     public GuiWindowsPublishBinariesBuilder(
         AbsolutePath submodulePath,
-        TargetCpuArchitecture architecture,
-        bool selfContained)
-        : base("DevToys GUI (Windows)", architecture, selfContained)
+        TargetCpuArchitecture architecture)
+        : base("DevToys GUI (Windows)", architecture, selfContained: true)
     {
         _projectPath = submodulePath / "src" / "app" / "dev" / "platforms" / "desktop" / "DevToys.Windows" / "DevToys.Windows.csproj";
     }
 
-    internal override void Build(AbsolutePath publishDirectory, Configuration configuration)
+    internal override void Build(AbsolutePath publishDirectory, AbsolutePath assetsDirectory, Configuration configuration)
     {
-        AbsolutePath outputPath = publishDirectory / $"{_projectPath.NameWithoutExtension}-{Architecture.RuntimeIdentifier}{(SelfContained ? "-portable" : "")}";
+        AbsolutePath outputPath = publishDirectory / $"{_projectPath.NameWithoutExtension}-{Architecture.RuntimeIdentifier}";
 
         Microsoft.Build.Evaluation.Project project = ProjectModelTasks.ParseProject(_projectPath);
         ProjectProperty targetFramework = project.GetProperty("TargetFramework");
@@ -48,6 +47,9 @@ internal sealed class GuiWindowsPublishBinariesBuilder : PublishBinariesBuilder
 
         AbsolutePath blazorContentFolder = outputPath / "wwwroot" / "_content";
         blazorContentFolder.DeleteDirectory();
+
+        AbsolutePath licenseFile = assetsDirectory / "LICENSE.md";
+        FileSystemTasks.CopyFile(licenseFile, outputPath / "LICENSE.md", FileExistsPolicy.OverwriteIfNewer);
 
         OutputPath = outputPath;
     }

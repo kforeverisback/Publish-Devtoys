@@ -37,7 +37,7 @@ internal abstract class SubmoduleBase
         return RepositoryDirectory.GlobFiles("**/*Tests.csproj");
     }
 
-    internal virtual ValueTask BuildPublishBinariesAsync(AbsolutePath publishDirectory, Configuration configuration)
+    internal virtual ValueTask BuildPublishBinariesAsync(AbsolutePath publishDirectory, AbsolutePath assetsDirectory, Configuration configuration)
     {
         return ValueTask.CompletedTask;
     }

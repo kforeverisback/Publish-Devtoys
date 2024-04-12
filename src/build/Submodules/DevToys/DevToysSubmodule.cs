@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 using System.Threading.Tasks;
 using Core;
 using Helper;
@@ -44,7 +43,7 @@ internal sealed class DevToysSubmodule : SubmoduleBase
         }
     }
 
-    internal override ValueTask BuildPublishBinariesAsync(AbsolutePath publishDirectory, Configuration configuration)
+    internal override ValueTask BuildPublishBinariesAsync(AbsolutePath publishDirectory, AbsolutePath assetsDirectory, Configuration configuration)
     {
         if (OperatingSystem.IsMacOS())
         {
@@ -67,7 +66,7 @@ internal sealed class DevToysSubmodule : SubmoduleBase
                 builder.Architecture.RuntimeIdentifier,
                 builder.SelfContained);
 
-            builder.Build(publishDirectory, configuration);
+            builder.Build(publishDirectory, assetsDirectory, configuration);
 
             Log.Information(string.Empty);
         }
@@ -102,7 +101,7 @@ internal sealed class DevToysSubmodule : SubmoduleBase
             }
             else if (builder is GuiWindowsPublishBinariesBuilder guiWindowsPublishBinariesBuilder)
             {
-                GuiPackingWindows.Pack(guiWindowsPublishBinariesBuilder);
+                GuiPackingWindows.Pack(packDirectory, guiWindowsPublishBinariesBuilder);
             }
             // TODO: Mac and Linux GUI
 
@@ -128,13 +127,9 @@ internal sealed class DevToysSubmodule : SubmoduleBase
     private IEnumerable<PublishBinariesBuilder> GetWindowsProjectsToPublish()
     {
         // GUI
-        yield return new GuiWindowsPublishBinariesBuilder(RepositoryDirectory, Windows_X86, selfContained: true);
-        yield return new GuiWindowsPublishBinariesBuilder(RepositoryDirectory, Windows_X64, selfContained: true);
-        yield return new GuiWindowsPublishBinariesBuilder(RepositoryDirectory, Windows_Arm64, selfContained: true);
-
-        yield return new GuiWindowsPublishBinariesBuilder(RepositoryDirectory, Windows_X86, selfContained: false);
-        yield return new GuiWindowsPublishBinariesBuilder(RepositoryDirectory, Windows_X64, selfContained: false);
-        yield return new GuiWindowsPublishBinariesBuilder(RepositoryDirectory, Windows_Arm64, selfContained: false);
+        yield return new GuiWindowsPublishBinariesBuilder(RepositoryDirectory, Windows_X86);
+        yield return new GuiWindowsPublishBinariesBuilder(RepositoryDirectory, Windows_X64);
+        yield return new GuiWindowsPublishBinariesBuilder(RepositoryDirectory, Windows_Arm64);
 
         // CLI
         yield return new CliPublishBinariesBuilder(RepositoryDirectory, Windows_X86, selfContained: true);

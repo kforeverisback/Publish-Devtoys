@@ -10,12 +10,20 @@ internal static class TestTask
 {
     internal static void Run(SubmoduleBase[] submodules, Configuration configuration)
     {
-        foreach (SubmoduleBase submodule in submodules)
+        try
         {
-            foreach (AbsolutePath project in submodule.GetTestProjects())
+            foreach (SubmoduleBase submodule in submodules)
             {
-                RunTestProject(project, configuration);
+                foreach (AbsolutePath project in submodule.GetTestProjects())
+                {
+                    RunTestProject(project, configuration);
+                }
             }
+        }
+        catch (System.Exception exception)
+        {
+            Log.Error(exception, "An error occurred while running the tests.");
+            throw;
         }
     }
 

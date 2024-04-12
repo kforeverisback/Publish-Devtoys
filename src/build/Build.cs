@@ -40,6 +40,8 @@ internal class Build : NukeBuild
         new Submodules.DevToysTools.DevToysToolsSubmodule(RootDirectory)
     };
 
+    private AbsolutePath AssetsDirectory { get; } = RootDirectory / "assets";
+
     public Target Clean => _ => _
         .Executes(
             () => CleanTask.Run(RootDirectory, Submodules));
@@ -85,7 +87,7 @@ internal class Build : NukeBuild
         .DependsOn(RunTests)
         .Description(description: "Generate publish artifacts.")
         .Executes(
-            () => CompilePublishBinariesTask.RunAsync(RootDirectory, Submodules, Configuration));
+            () => CompilePublishBinariesTask.RunAsync(RootDirectory, AssetsDirectory, Submodules, Configuration));
 
     public Target Pack => _ => _
         .DependsOn(CompilePublishBits)

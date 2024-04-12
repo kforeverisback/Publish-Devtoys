@@ -19,5 +19,5 @@ internal abstract class PublishBinariesBuilder
 
     public AbsolutePath? OutputPath { get; protected set; }
 
-    internal abstract void Build(AbsolutePath publishDirectory, Configuration configuration);
+    internal abstract void Build(AbsolutePath publishDirectory, AbsolutePath assetsDirectory, Configuration configuration);
 }
