@@ -1,5 +1,11 @@
-﻿using InnoSetup.ScriptBuilder;
+﻿using System.IO;
+using System.Linq;
+using System.Reflection;
+using InnoSetup.ScriptBuilder;
+using Nuke.Common;
 using Nuke.Common.IO;
+using Nuke.Common.Tooling;
+using Nuke.Common.Tools.InnoSetup;
 using Serilog;
 using Submodules.DevToys.PublishBinariesBuilders;
 
@@ -7,10 +13,10 @@ namespace Submodules.DevToys.Packing;
 
 internal static class GuiPackingWindows
 {
-    internal static void Pack(AbsolutePath packDirectory, AbsolutePath repositoryDirectory, GuiWindowsPublishBinariesBuilder guiWindowsPublishBinariesBuilder)
+    internal static void Pack(AbsolutePath packDirectory, AbsolutePath devToysRepositoryDirectory, GuiWindowsPublishBinariesBuilder guiWindowsPublishBinariesBuilder)
     {
         Zip(packDirectory, guiWindowsPublishBinariesBuilder);
-        CreateSetup(packDirectory, repositoryDirectory, guiWindowsPublishBinariesBuilder);
+        CreateSetup(packDirectory, devToysRepositoryDirectory, guiWindowsPublishBinariesBuilder);
         CreateMSIX(packDirectory, guiWindowsPublishBinariesBuilder);
     }
 
@@ -32,7 +38,7 @@ internal static class GuiPackingWindows
         Log.Information(string.Empty);
     }
 
-    private static void CreateSetup(AbsolutePath packDirectory, AbsolutePath repositoryDirectory, GuiWindowsPublishBinariesBuilder guiWindowsPublishBinariesBuilder)
+    private static void CreateSetup(AbsolutePath packDirectory, AbsolutePath devToysRepositoryDirectory, GuiWindowsPublishBinariesBuilder guiWindowsPublishBinariesBuilder)
     {
         Log.Information("Creating installer for DevToys {architecutre}...", guiWindowsPublishBinariesBuilder.Architecture.RuntimeIdentifier);
 
@@ -41,8 +47,15 @@ internal static class GuiPackingWindows
                 versionNumber: "2.0.0-prev.0", // TODO
                 isPreview: true, // TODO
                 packDirectory,
-                repositoryDirectory,
+                devToysRepositoryDirectory,
                 guiWindowsPublishBinariesBuilder);
+
+        AbsolutePath innoSetupCompiler = NuGetToolPathResolver.GetPackageExecutable("Tools.InnoSetup", "ISCC.exe");
+
+        InnoSetupTasks.InnoSetup(config => config
+            .SetProcessToolPath(innoSetupCompiler)
+            .SetScriptFile(innoSetupScriptFile)
+            .SetOutputDir(packDirectory));
 
         Log.Information(string.Empty);
     }
@@ -60,7 +73,7 @@ internal static class GuiPackingWindows
         string versionNumber,
         bool isPreview,
         AbsolutePath packDirectory,
-        AbsolutePath repositoryDirectory,
+        AbsolutePath devToysRepositoryDirectory,
         GuiWindowsPublishBinariesBuilder guiWindowsPublishBinariesBuilder)
     {
         string appName = "DevToys";
@@ -72,7 +85,7 @@ internal static class GuiPackingWindows
         AbsolutePath binDirectory = guiWindowsPublishBinariesBuilder.OutputPath!;
         AbsolutePath exeFile = guiWindowsPublishBinariesBuilder.OutputPath / "DevToys.Windows.exe";
         AbsolutePath archiveFile = packDirectory / $"devtoys_setup_{guiWindowsPublishBinariesBuilder.Architecture.PlatformTarget}.exe";
-        AbsolutePath iconFile = repositoryDirectory / "assets" / "logo" / "Icon-Windows.ico";
+        AbsolutePath iconFile = devToysRepositoryDirectory / "assets" / "logo" / "Icon-Windows.ico";
 
         AbsolutePath innoSetupScriptFile = binDirectory.Parent / $"devtoys_setup_{guiWindowsPublishBinariesBuilder.Architecture.PlatformTarget}.iss";
 
