@@ -4,16 +4,24 @@ using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Core;
 using Helper;
+using Microsoft.Build.Evaluation;
 using Nuke.Common.IO;
+using Nuke.Common.ProjectModel;
+using Nuke.Common.Tooling;
+using Nuke.Common.Tools.DotNet;
+using Nuke.Common.Utilities.Collections;
 using Serilog;
-using Submodules.DevToys.Packing;
+using Submodules.DevToys.Packing.MacOS;
+using Submodules.DevToys.Packing.Windows;
 using Submodules.DevToys.PublishBinariesBuilders;
 using static Core.TargetCpuArchitecture;
+using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
 namespace Submodules.DevToys;
 
 internal sealed class DevToysSubmodule : SubmoduleBase
 {
+    private AbsolutePath? _devToysApiOutputPath;
     private ImmutableArray<PublishBinariesBuilder> publishBinariesBuilders = ImmutableArray<PublishBinariesBuilder>.Empty;
 
     public DevToysSubmodule(AbsolutePath repositoryDirectory)
@@ -53,6 +61,8 @@ internal sealed class DevToysSubmodule : SubmoduleBase
 
     internal override ValueTask BuildPublishBinariesAsync(AbsolutePath publishDirectory, AbsolutePath assetsDirectory, Configuration configuration)
     {
+        BuildDevToysApiNuGetPackage(publishDirectory, configuration);
+
         if (OperatingSystem.IsMacOS())
         {
             this.publishBinariesBuilders = GetMacOSProjectsToPublish().ToImmutableArray();
@@ -84,6 +94,15 @@ internal sealed class DevToysSubmodule : SubmoduleBase
 
     internal override async ValueTask PackPublishBinariesAsync(AbsolutePath packDirectory, Configuration configuration)
     {
+        Log.Information(messageTemplate: "Copying DevToys.Api NuGet package to artifacts");
+
+        _devToysApiOutputPath
+            .GetFiles("*.nupkg")
+            .ForEach(x => x
+                .MoveToDirectory(packDirectory));
+
+        Log.Information(string.Empty);
+
         foreach (PublishBinariesBuilder builder in this.publishBinariesBuilders)
         {
             Log.Information(
@@ -163,5 +182,30 @@ internal sealed class DevToysSubmodule : SubmoduleBase
 
         yield return new CliPublishBinariesBuilder(RepositoryDirectory, Linux_X64, selfContained: false);
         yield return new CliPublishBinariesBuilder(RepositoryDirectory, Linux_Arm, selfContained: false);
+    }
+
+    private void BuildDevToysApiNuGetPackage(AbsolutePath publishDirectory, Configuration configuration)
+    {
+        Log.Information("Building DevToys.Api NuGet package");
+
+        _devToysApiOutputPath = publishDirectory / $"DevToys.Api";
+        AbsolutePath projectPath = RepositoryDirectory / "src" / "app" / "dev" / "DevToys.Api" / "DevToys.Api.csproj";
+
+        Microsoft.Build.Evaluation.Project project = ProjectModelTasks.ParseProject(projectPath);
+        ProjectProperty targetFramework = project.GetProperty("TargetFramework");
+
+        DotNetPack(
+            s => s
+            .SetProject(projectPath)
+            .SetConfiguration(configuration)
+            .SetPublishSingleFile(false)
+            .SetPublishReadyToRun(false)
+            .SetPublishTrimmed(false)
+            .SetVerbosity(DotNetVerbosity.quiet)
+            .SetProcessArgumentConfigurator(_ => _
+                .Add($"/bl:\"{_devToysApiOutputPath}.binlog\""))
+            .SetOutputDirectory(_devToysApiOutputPath));
+
+        Log.Information(string.Empty);
     }
 }

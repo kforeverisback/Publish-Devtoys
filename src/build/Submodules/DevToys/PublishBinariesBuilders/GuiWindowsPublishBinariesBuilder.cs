@@ -1,4 +1,5 @@
 ﻿using Core;
+using Helper;
 using Microsoft.Build.Evaluation;
 using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
@@ -50,6 +51,10 @@ internal sealed class GuiWindowsPublishBinariesBuilder : PublishBinariesBuilder
 
         AbsolutePath licenseFile = assetsDirectory / "LICENSE.md";
         FileSystemTasks.CopyFile(licenseFile, outputPath / "LICENSE.md", FileExistsPolicy.OverwriteIfNewer);
+
+        NuGetHelper.UnpackNuGetPackage(
+            NuGetHelper.FindDevToysToolsNuGetPackage(publishDirectory),
+            outputPath / "Plugins" / "DevToys.Tools");
 
         OutputPath = outputPath;
     }

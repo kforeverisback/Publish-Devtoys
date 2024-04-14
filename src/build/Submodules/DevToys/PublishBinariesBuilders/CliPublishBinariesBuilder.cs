@@ -1,4 +1,5 @@
 ﻿using Core;
+using Helper;
 using Microsoft.Build.Evaluation;
 using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
@@ -11,7 +12,6 @@ namespace Submodules.DevToys.PublishBinariesBuilders;
 internal sealed class CliPublishBinariesBuilder : PublishBinariesBuilder
 {
     private readonly AbsolutePath _projectPath;
-    private readonly AbsolutePath _submodulePath;
 
     public CliPublishBinariesBuilder(
         AbsolutePath submodulePath,
@@ -19,7 +19,6 @@ internal sealed class CliPublishBinariesBuilder : PublishBinariesBuilder
         bool selfContained)
         : base("DevToys CLI", architecture, selfContained)
     {
-        _submodulePath = submodulePath;
         _projectPath = submodulePath / "src" / "app" / "dev" / "platforms" / "desktop" / "DevToys.CLI" / "DevToys.CLI.csproj";
     }
 
@@ -48,6 +47,10 @@ internal sealed class CliPublishBinariesBuilder : PublishBinariesBuilder
 
         AbsolutePath licenseFile = assetsDirectory / "LICENSE.md";
         FileSystemTasks.CopyFile(licenseFile, outputPath / "LICENSE.md", FileExistsPolicy.OverwriteIfNewer);
+
+        NuGetHelper.UnpackNuGetPackage(
+            NuGetHelper.FindDevToysToolsNuGetPackage(publishDirectory),
+            outputPath / "Plugins" / "DevToys.Tools");
 
         OutputPath = outputPath;
     }

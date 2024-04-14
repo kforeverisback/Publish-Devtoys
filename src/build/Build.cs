@@ -25,8 +25,8 @@ internal class Build : NukeBuild
 
     private SubmoduleBase[] Submodules { get; } =
     {
-        new Submodules.DevToys.DevToysSubmodule(RootDirectory),
-        new Submodules.DevToysTools.DevToysToolsSubmodule(RootDirectory)
+        new Submodules.DevToysTools.DevToysToolsSubmodule(RootDirectory),
+        new Submodules.DevToys.DevToysSubmodule(RootDirectory)
     };
 
     private AbsolutePath AssetsDirectory { get; } = RootDirectory / "assets";

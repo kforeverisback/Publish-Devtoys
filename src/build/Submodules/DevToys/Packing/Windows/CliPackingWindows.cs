@@ -2,9 +2,9 @@
 using Serilog;
 using Submodules.DevToys.PublishBinariesBuilders;
 
-namespace Submodules.DevToys.Packing;
+namespace Submodules.DevToys.Packing.Windows;
 
-internal static class CliPackingMacOS
+internal static class CliPackingWindows
 {
     internal static void Pack(AbsolutePath packDirectory, CliPublishBinariesBuilder cliPublishBinariesBuilder)
     {
@@ -12,9 +12,7 @@ internal static class CliPackingMacOS
 
         string portable = string.Empty;
         if (cliPublishBinariesBuilder.SelfContained)
-        {
             portable = "_portable";
-        }
 
         AbsolutePath archiveFile = packDirectory / $"devtoys_cli_{cliPublishBinariesBuilder.Architecture.RuntimeIdentifier}{portable}.zip";
 

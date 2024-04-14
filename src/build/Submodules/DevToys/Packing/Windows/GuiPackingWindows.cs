@@ -15,7 +15,7 @@ using WindowsTooling.AppxManifest;
 using WindowsTooling.Progress;
 using WindowsTooling.Sdk;
 
-namespace Submodules.DevToys.Packing;
+namespace Submodules.DevToys.Packing.Windows;
 
 internal static class GuiPackingWindows
 {
@@ -107,9 +107,7 @@ internal static class GuiPackingWindows
     {
         string appName = "DevToys";
         if (isPreview)
-        {
             appName = "DevToys Preview";
-        }
 
         AbsolutePath binDirectory = guiWindowsPublishBinariesBuilder.OutputPath!;
         AbsolutePath exeFile = guiWindowsPublishBinariesBuilder.OutputPath / "DevToys.Windows.exe";
@@ -120,9 +118,7 @@ internal static class GuiPackingWindows
 
         Architectures architectures;
         if (guiWindowsPublishBinariesBuilder.Architecture == TargetCpuArchitecture.Windows_Arm64)
-        {
             architectures = Architectures.Arm64;
-        }
         else if (guiWindowsPublishBinariesBuilder.Architecture == TargetCpuArchitecture.Windows_X64)
         {
             architectures = Architectures.X64;
@@ -250,9 +246,7 @@ internal static class GuiPackingWindows
             temporaryFiles.Add(result.SourcePath);
 
             if (result.PackageRelativePath == null)
-            {
                 continue;
-            }
 
             fileListBuilder.AddFile(result.SourcePath, result.PackageRelativePath);
         }
@@ -265,9 +259,7 @@ internal static class GuiPackingWindows
 
         string srcManifest = fileListBuilder.GetManifestSourcePath();
         if (srcManifest == null || !File.Exists(srcManifest))
-        {
             throw new InvalidOperationException("The selected folder cannot be packed because it has no manifest, and MSIX Hero was unable to create one. A manifest can be only created if the selected folder contains any executable file.");
-        }
 
         // Copy manifest to a temporary file
         var injector = new MsixHeroBrandingInjector();
