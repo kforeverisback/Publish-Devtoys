@@ -12,9 +12,11 @@ internal static class CliPackingWindows
 
         string portable = string.Empty;
         if (cliPublishBinariesBuilder.SelfContained)
+        {
             portable = "_portable";
+        }
 
-        AbsolutePath archiveFile = packDirectory / $"devtoys_cli_{cliPublishBinariesBuilder.Architecture.RuntimeIdentifier}{portable}.zip";
+        AbsolutePath archiveFile = packDirectory / cliPublishBinariesBuilder.Architecture.PlatformTarget / $"devtoys_cli_{cliPublishBinariesBuilder.Architecture.RuntimeIdentifier}{portable}.zip";
 
         if (cliPublishBinariesBuilder.OutputPath.DirectoryExists())
         {

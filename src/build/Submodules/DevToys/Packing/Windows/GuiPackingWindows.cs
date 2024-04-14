@@ -23,6 +23,8 @@ internal static class GuiPackingWindows
     {
         bool isPreview = true; // TODO
 
+        packDirectory = packDirectory / guiWindowsPublishBinariesBuilder.Architecture.PlatformTarget;
+
         Zip(packDirectory, guiWindowsPublishBinariesBuilder);
         CreateSetup(packDirectory, devToysRepositoryDirectory, guiWindowsPublishBinariesBuilder, isPreview);
         await CreateMSIXAsync(packDirectory, guiWindowsPublishBinariesBuilder, isPreview);
@@ -110,7 +112,7 @@ internal static class GuiPackingWindows
             appName = "DevToys Preview";
 
         AbsolutePath binDirectory = guiWindowsPublishBinariesBuilder.OutputPath!;
-        AbsolutePath exeFile = guiWindowsPublishBinariesBuilder.OutputPath / "DevToys.Windows.exe";
+        AbsolutePath exeFile = guiWindowsPublishBinariesBuilder.OutputPath / "DevToys.exe";
         AbsolutePath archiveFile = packDirectory / $"devtoys_setup_{guiWindowsPublishBinariesBuilder.Architecture.PlatformTarget}.exe";
         AbsolutePath iconFile = devToysRepositoryDirectory / "assets" / "logo" / "Icon-Windows.ico";
 
@@ -229,7 +231,7 @@ internal static class GuiPackingWindows
         var options = new AppxManifestCreatorOptions
         {
             CreateLogo = true,
-            EntryPoints = ["DevToys.Windows.exe"],
+            EntryPoints = ["DevToys.exe"],
             PackageArchitecture = architecture,
             PackageName = packageName,
             PackageDisplayName = displayName,
