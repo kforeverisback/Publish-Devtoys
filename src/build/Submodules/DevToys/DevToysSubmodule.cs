@@ -23,7 +23,15 @@ internal sealed class DevToysSubmodule : SubmoduleBase
 
     internal override async ValueTask RestoreAsync()
     {
-        AbsolutePath initPath = RepositoryDirectory / "init.cmd";
+        AbsolutePath initPath;
+        if (OperatingSystem.IsWindows())
+        {
+            initPath = RepositoryDirectory / "init.cmd";
+        }
+        else
+        {
+            initPath = RepositoryDirectory / "init.sh";
+        }
         await ShellHelper.RunScriptAsync(initPath);
     }
 
@@ -88,7 +96,7 @@ internal sealed class DevToysSubmodule : SubmoduleBase
             {
                 if (OperatingSystem.IsMacOS())
                 {
-                    // TODO
+                    CliPackingMacOS.Pack(packDirectory, cliPublishBinariesBuilder);
                 }
                 else if (OperatingSystem.IsWindows())
                 {
@@ -103,7 +111,11 @@ internal sealed class DevToysSubmodule : SubmoduleBase
             {
                 await GuiPackingWindows.PackAsync(packDirectory, RepositoryDirectory, guiWindowsPublishBinariesBuilder);
             }
-            // TODO: Mac and Linux GUI
+            else if (builder is GuiMacOSPublishBinariesBuilder guiMacOsPublishBinariesBuilder)
+            {
+                GuiPackingMacOS.Pack(packDirectory, RepositoryDirectory, guiMacOsPublishBinariesBuilder, configuration);
+            }
+            // TODO: Linux GUI
 
             Log.Information(string.Empty);
         }
@@ -112,7 +124,8 @@ internal sealed class DevToysSubmodule : SubmoduleBase
     private IEnumerable<PublishBinariesBuilder> GetMacOSProjectsToPublish()
     {
         // GUI
-        // TODO
+        yield return new GuiMacOSPublishBinariesBuilder(RepositoryDirectory, MacOs_X64);
+        yield return new GuiMacOSPublishBinariesBuilder(RepositoryDirectory, MacOs_Arm64);
 
         // CLI
         yield return new CliPublishBinariesBuilder(RepositoryDirectory, MacOs_X64, selfContained: true);

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Nuke.Common;
 using Nuke.Common.IO;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.PowerShell;
@@ -93,7 +94,8 @@ internal static class ShellHelper
                 FileName = "/bin/bash",
                 Arguments = $"-c \"{command}\"",
                 UseShellExecute = false,
-                CreateNoWindow = true
+                CreateNoWindow = true,
+                WorkingDirectory = EnvironmentInfo.WorkingDirectory
             },
             EnableRaisingEvents = true
         };
