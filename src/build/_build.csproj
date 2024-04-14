@@ -18,4 +18,8 @@
         <PackageReference Include="Tools.InnoSetup" Version="6.2.2" IncludeAssets="All" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\WindowsTooling\WindowsTooling.csproj" />
+    </ItemGroup>
+
 </Project>

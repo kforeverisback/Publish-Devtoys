@@ -1,10 +1,10 @@
-﻿using Nuke.Common.IO;
+﻿using System;
+using System.Diagnostics;
+using System.Threading.Tasks;
+using Nuke.Common.IO;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.PowerShell;
 using Serilog;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using System;
 
 namespace Helper;
 

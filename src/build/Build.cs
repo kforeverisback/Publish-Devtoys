@@ -1,20 +1,9 @@
-﻿using System;
-using System.Linq;
-using Core;
+﻿using Core;
 using Nuke.Common;
-using Nuke.Common.CI;
-using Nuke.Common.Execution;
 using Nuke.Common.Git;
 using Nuke.Common.IO;
-using Nuke.Common.ProjectModel;
-using Nuke.Common.Tooling;
-using Nuke.Common.Utilities.Collections;
-using Octokit;
 using Serilog;
 using Tasks;
-using static Nuke.Common.EnvironmentInfo;
-using static Nuke.Common.IO.FileSystemTasks;
-using static Nuke.Common.IO.PathConstruction;
 
 internal class Build : NukeBuild
 {
@@ -93,5 +82,5 @@ internal class Build : NukeBuild
         .DependsOn(CompilePublishBits)
         .Description(description: "Generate packages & installers.")
         .Executes(
-            () => PackPublishBinariesTask.RunAsync(RootDirectory, Submodules, Configuration));
+             () => PackPublishBinariesTask.RunAsync(RootDirectory, Submodules, Configuration));
 }

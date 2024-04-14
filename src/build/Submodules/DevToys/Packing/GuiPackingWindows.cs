@@ -1,23 +1,31 @@
-﻿using System.IO;
-using System.Linq;
-using System.Reflection;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Xml.Linq;
+using Core;
 using InnoSetup.ScriptBuilder;
-using Nuke.Common;
 using Nuke.Common.IO;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.InnoSetup;
 using Serilog;
 using Submodules.DevToys.PublishBinariesBuilders;
+using WindowsTooling.AppxManifest;
+using WindowsTooling.Progress;
+using WindowsTooling.Sdk;
 
 namespace Submodules.DevToys.Packing;
 
 internal static class GuiPackingWindows
 {
-    internal static void Pack(AbsolutePath packDirectory, AbsolutePath devToysRepositoryDirectory, GuiWindowsPublishBinariesBuilder guiWindowsPublishBinariesBuilder)
+    internal static async Task PackAsync(AbsolutePath packDirectory, AbsolutePath devToysRepositoryDirectory, GuiWindowsPublishBinariesBuilder guiWindowsPublishBinariesBuilder)
     {
+        bool isPreview = true; // TODO
+
         Zip(packDirectory, guiWindowsPublishBinariesBuilder);
-        CreateSetup(packDirectory, devToysRepositoryDirectory, guiWindowsPublishBinariesBuilder);
-        CreateMSIX(packDirectory, guiWindowsPublishBinariesBuilder);
+        CreateSetup(packDirectory, devToysRepositoryDirectory, guiWindowsPublishBinariesBuilder, isPreview);
+        await CreateMSIXAsync(packDirectory, guiWindowsPublishBinariesBuilder, isPreview);
     }
 
     private static void Zip(AbsolutePath packDirectory, GuiWindowsPublishBinariesBuilder guiWindowsPublishBinariesBuilder)
@@ -32,20 +40,20 @@ internal static class GuiPackingWindows
                 archiveFile,
                 filter: null,
                 compressionLevel: System.IO.Compression.CompressionLevel.SmallestSize,
-                fileMode: System.IO.FileMode.Create);
+                fileMode: FileMode.Create);
         }
 
         Log.Information(string.Empty);
     }
 
-    private static void CreateSetup(AbsolutePath packDirectory, AbsolutePath devToysRepositoryDirectory, GuiWindowsPublishBinariesBuilder guiWindowsPublishBinariesBuilder)
+    private static void CreateSetup(AbsolutePath packDirectory, AbsolutePath devToysRepositoryDirectory, GuiWindowsPublishBinariesBuilder guiWindowsPublishBinariesBuilder, bool isPreview)
     {
         Log.Information("Creating installer for DevToys {architecutre}...", guiWindowsPublishBinariesBuilder.Architecture.RuntimeIdentifier);
 
         AbsolutePath innoSetupScriptFile
             = GenerateInnoSetupScript(
                 versionNumber: "2.0.0-prev.0", // TODO
-                isPreview: true, // TODO
+                isPreview,
                 packDirectory,
                 devToysRepositoryDirectory,
                 guiWindowsPublishBinariesBuilder);
@@ -60,11 +68,32 @@ internal static class GuiPackingWindows
         Log.Information(string.Empty);
     }
 
-    private static void CreateMSIX(AbsolutePath packDirectory, GuiWindowsPublishBinariesBuilder guiWindowsPublishBinariesBuilder)
+    private static async Task CreateMSIXAsync(AbsolutePath packDirectory, GuiWindowsPublishBinariesBuilder guiWindowsPublishBinariesBuilder, bool isPreview)
     {
         Log.Information("Creating Microsoft Store package for DevToys {architecutre}...", guiWindowsPublishBinariesBuilder.Architecture.RuntimeIdentifier);
 
-        // todo: implement MSIX creation
+        AbsolutePath sourceMappingFile
+            = await CreateAppxManifestAsync(
+                versionNumber: "2.0.0-prev.0", // TODO
+                isPreview,
+                guiWindowsPublishBinariesBuilder);
+
+        AbsolutePath msixFile = packDirectory / $"devtoys_{guiWindowsPublishBinariesBuilder.Architecture.PlatformTarget}.msix";
+
+        var progress = new Progress<ProgressData>(data =>
+        {
+            Log.Information(data.Message);
+        });
+
+        var sdk = new MakeAppxWrapper();
+        await sdk.Pack(
+            MakeAppxPackOptions.CreateFromMapping(
+                sourceMappingFile,
+                msixFile,
+                compress: true,
+                validate: true),
+            progress,
+            CancellationToken.None);
 
         Log.Information(string.Empty);
     }
@@ -147,5 +176,93 @@ internal static class GuiPackingWindows
             path: innoSetupScriptFile);
 
         return innoSetupScriptFile;
+    }
+
+    private static async Task<AbsolutePath> CreateAppxManifestAsync(
+        string versionNumber,
+        bool isPreview,
+        GuiWindowsPublishBinariesBuilder guiWindowsPublishBinariesBuilder)
+    {
+        string displayName = "DevToys";
+        string packageName = "DevToys";
+        if (isPreview)
+        {
+            displayName = "DevToys Preview";
+            packageName = "DevToys-Preview";
+        }
+
+        var fileListBuilder = new PackageFileListBuilder();
+        fileListBuilder.AddDirectory(guiWindowsPublishBinariesBuilder.OutputPath, recursive: true, targetRelativeDirectory: string.Empty);
+
+        AppxPackageArchitecture architecture;
+        if (guiWindowsPublishBinariesBuilder.Architecture == TargetCpuArchitecture.Windows_Arm64)
+        {
+            architecture = AppxPackageArchitecture.Arm64;
+        }
+        else if (guiWindowsPublishBinariesBuilder.Architecture == TargetCpuArchitecture.Windows_X64)
+        {
+            architecture = AppxPackageArchitecture.x64;
+        }
+        else if (guiWindowsPublishBinariesBuilder.Architecture == TargetCpuArchitecture.Windows_X86)
+        {
+            architecture = AppxPackageArchitecture.x86;
+        }
+        else
+        {
+            throw new NotSupportedException($"Unsupported platform target: {guiWindowsPublishBinariesBuilder.Architecture.PlatformTarget}");
+        }
+
+        var options = new AppxManifestCreatorOptions
+        {
+            CreateLogo = true,
+            EntryPoints = ["DevToys.Windows.exe"],
+            PackageArchitecture = architecture,
+            PackageName = packageName,
+            PackageDisplayName = displayName,
+            PackageDescription = "A Swiss Army knife for developers.",
+            PublisherName = "CN=etiennebaudoux",
+            PublisherDisplayName = "etiennebaudoux",
+            Version = new Version(0, 0, 0, 0) // TODO
+        };
+
+        var temporaryFiles = new List<string>();
+        var manifestCreator = new AppxManifestCreator();
+        await foreach (CreatedItem result in manifestCreator.CreateManifestForDirectory(new DirectoryInfo(guiWindowsPublishBinariesBuilder.OutputPath), options, CancellationToken.None))
+        {
+            temporaryFiles.Add(result.SourcePath);
+
+            if (result.PackageRelativePath == null)
+            {
+                continue;
+            }
+
+            fileListBuilder.AddFile(result.SourcePath, result.PackageRelativePath);
+        }
+
+        string tempFileList = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N") + ".list");
+        temporaryFiles.Add(tempFileList);
+
+        string tempManifestPath = Path.Combine(Path.GetTempPath(), "AppxManifest-" + Guid.NewGuid().ToString("N") + ".xml");
+        temporaryFiles.Add(tempManifestPath);
+
+        string srcManifest = fileListBuilder.GetManifestSourcePath();
+        if (srcManifest == null || !File.Exists(srcManifest))
+        {
+            throw new InvalidOperationException("The selected folder cannot be packed because it has no manifest, and MSIX Hero was unable to create one. A manifest can be only created if the selected folder contains any executable file.");
+        }
+
+        // Copy manifest to a temporary file
+        var injector = new MsixHeroBrandingInjector();
+        await using (FileStream manifestStream = File.OpenRead(fileListBuilder.GetManifestSourcePath()))
+        {
+            XDocument xml = await XDocument.LoadAsync(manifestStream, LoadOptions.None, CancellationToken.None);
+            await injector.Inject(xml);
+            await File.WriteAllTextAsync(tempManifestPath, xml.ToString(SaveOptions.None), CancellationToken.None);
+            fileListBuilder.AddManifest(tempManifestPath);
+        }
+
+        await File.WriteAllTextAsync(tempFileList, fileListBuilder.ToString(), CancellationToken.None);
+
+        return tempFileList;
     }
 }

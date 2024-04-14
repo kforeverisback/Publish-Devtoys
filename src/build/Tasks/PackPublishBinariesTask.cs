@@ -7,7 +7,7 @@ namespace Tasks;
 
 internal static class PackPublishBinariesTask
 {
-    internal static async ValueTask RunAsync(AbsolutePath rootDirectory, SubmoduleBase[] submodules, Configuration configuration)
+    internal static async Task RunAsync(AbsolutePath rootDirectory, SubmoduleBase[] submodules, Configuration configuration)
     {
         try
         {

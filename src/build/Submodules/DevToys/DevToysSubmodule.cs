@@ -74,7 +74,7 @@ internal sealed class DevToysSubmodule : SubmoduleBase
         return ValueTask.CompletedTask;
     }
 
-    internal override ValueTask PackPublishBinariesAsync(AbsolutePath packDirectory, Configuration configuration)
+    internal override async ValueTask PackPublishBinariesAsync(AbsolutePath packDirectory, Configuration configuration)
     {
         foreach (PublishBinariesBuilder builder in this.publishBinariesBuilders)
         {
@@ -101,14 +101,12 @@ internal sealed class DevToysSubmodule : SubmoduleBase
             }
             else if (builder is GuiWindowsPublishBinariesBuilder guiWindowsPublishBinariesBuilder)
             {
-                GuiPackingWindows.Pack(packDirectory, RepositoryDirectory, guiWindowsPublishBinariesBuilder);
+                await GuiPackingWindows.PackAsync(packDirectory, RepositoryDirectory, guiWindowsPublishBinariesBuilder);
             }
             // TODO: Mac and Linux GUI
 
             Log.Information(string.Empty);
         }
-
-        return ValueTask.CompletedTask;
     }
 
     private IEnumerable<PublishBinariesBuilder> GetMacOSProjectsToPublish()
