@@ -1,4 +1,6 @@
-﻿using Core;
+﻿using System.IO;
+using Core;
+using Helper;
 using Microsoft.Build.Evaluation;
 using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
@@ -45,6 +47,17 @@ internal sealed class GuiMacOSPublishBinariesBuilder : PublishBinariesBuilder
                 .Add($"/bl:\"{outputPath}.binlog\""))
             .SetOutputDirectory(outputPath));
 
+        // Copy DevToys.Tools to the app
+        AbsolutePath appFile = outputPath / "DevToys.app";
+        if (!appFile.DirectoryExists())
+        {
+            throw new FileNotFoundException("Unable to find DevToys.app file");
+        }
+        
+        NuGetHelper.UnpackNuGetPackage(
+            NuGetHelper.FindDevToysToolsNuGetPackage(publishDirectory),
+            appFile / "Contents" / "Resources" / "Plugins" / "DevToys.Tools");
+        
         OutputPath = outputPath;
     }
 }

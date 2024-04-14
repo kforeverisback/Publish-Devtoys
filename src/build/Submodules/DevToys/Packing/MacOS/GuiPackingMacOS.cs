@@ -26,32 +26,35 @@ internal static class GuiPackingMacOS
         FileSystemTasks.CopyDirectoryRecursively(appFile, packDirectory / guiMacOsPublishBinariesBuilder.Architecture.PlatformTarget / $"DevToys.app", DirectoryExistsPolicy.Fail);
 
         Log.Information(string.Empty);
-        Log.Information("Creating installer for DevToys {architecutre}...", guiMacOsPublishBinariesBuilder.Architecture.RuntimeIdentifier);
-
-        AbsolutePath projectPath = devToysRepositoryDirectory / "src" / "app" / "dev" / "platforms" / "desktop" / "DevToys.MacOS" / "DevToys.MacOS.csproj";
-        AbsolutePath outputPath = packDirectory / guiMacOsPublishBinariesBuilder.Architecture.PlatformTarget;
-
-        Microsoft.Build.Evaluation.Project project = ProjectModelTasks.ParseProject(projectPath);
-        ProjectProperty targetFramework = project.GetProperty("TargetFramework");
-
-        DotNetPublish(
-            s => s
-                .SetProject(projectPath)
-                .SetConfiguration(configuration)
-                .SetFramework(targetFramework.EvaluatedValue)
-                .SetRuntime(guiMacOsPublishBinariesBuilder.Architecture.RuntimeIdentifier)
-                .SetPlatform(guiMacOsPublishBinariesBuilder.Architecture.PlatformTarget)
-                .SetSelfContained(guiMacOsPublishBinariesBuilder.SelfContained)
-                .SetPublishSingleFile(false)
-                .SetPublishReadyToRun(false)
-                .SetPublishTrimmed(true) // HACK: Required for MacOS. However, <LinkMode>None</LinkMode> in the CSPROJ disables trimming.
-                .SetVerbosity(DotNetVerbosity.quiet)
-                .SetProcessArgumentConfigurator(_ => _
-                    .Add("/p:RuntimeIdentifierOverride=" + guiMacOsPublishBinariesBuilder.Architecture.RuntimeIdentifier)
-                    .Add("/p:CreatePackage=True") /* Will create an installable .pkg */
-                    /* .Add($"/bl:\"{outputPath}.binlog\"") */)
-                .SetOutput(outputPath));
-
-        Log.Information(string.Empty);
+        
+        // TODO: To get a PKG with DevToys.Tools included, we will likely need to some changes in DevToys.MacOS to include the DevToys.Tools into bundle resources.
+        
+        // Log.Information("Creating installer for DevToys {architecutre}...", guiMacOsPublishBinariesBuilder.Architecture.RuntimeIdentifier);
+        //
+        // AbsolutePath projectPath = devToysRepositoryDirectory / "src" / "app" / "dev" / "platforms" / "desktop" / "DevToys.MacOS" / "DevToys.MacOS.csproj";
+        // AbsolutePath outputPath = packDirectory / guiMacOsPublishBinariesBuilder.Architecture.PlatformTarget;
+        //
+        // Microsoft.Build.Evaluation.Project project = ProjectModelTasks.ParseProject(projectPath);
+        // ProjectProperty targetFramework = project.GetProperty("TargetFramework");
+        //
+        // DotNetPublish(
+        //     s => s
+        //         .SetProject(projectPath)
+        //         .SetConfiguration(configuration)
+        //         .SetFramework(targetFramework.EvaluatedValue)
+        //         .SetRuntime(guiMacOsPublishBinariesBuilder.Architecture.RuntimeIdentifier)
+        //         .SetPlatform(guiMacOsPublishBinariesBuilder.Architecture.PlatformTarget)
+        //         .SetSelfContained(guiMacOsPublishBinariesBuilder.SelfContained)
+        //         .SetPublishSingleFile(false)
+        //         .SetPublishReadyToRun(false)
+        //         .SetPublishTrimmed(true) // HACK: Required for MacOS. However, <LinkMode>None</LinkMode> in the CSPROJ disables trimming.
+        //         .SetVerbosity(DotNetVerbosity.quiet)
+        //         .SetProcessArgumentConfigurator(_ => _
+        //             .Add("/p:RuntimeIdentifierOverride=" + guiMacOsPublishBinariesBuilder.Architecture.RuntimeIdentifier)
+        //             .Add("/p:CreatePackage=True") /* Will create an installable .pkg */
+        //             /* .Add($"/bl:\"{outputPath}.binlog\"") */)
+        //         .SetOutput(outputPath));
+        //
+        // Log.Information(string.Empty);
     }
 }

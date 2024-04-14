@@ -24,7 +24,7 @@ internal sealed class CliPublishBinariesBuilder : PublishBinariesBuilder
 
     internal override void Build(AbsolutePath publishDirectory, AbsolutePath assetsDirectory, Configuration configuration)
     {
-        AbsolutePath outputPath = publishDirectory / $"{_projectPath.NameWithoutExtension}-{Architecture.RuntimeIdentifier}{(SelfContained ? "-portable" : "")}";
+        AbsolutePath outputPath = publishDirectory / Architecture.PlatformTarget / $"{_projectPath.NameWithoutExtension}-{Architecture.RuntimeIdentifier}{(SelfContained ? "-portable" : "")}";
 
         Microsoft.Build.Evaluation.Project project = ProjectModelTasks.ParseProject(_projectPath);
         ProjectProperty targetFramework = project.GetProperty("TargetFramework");
