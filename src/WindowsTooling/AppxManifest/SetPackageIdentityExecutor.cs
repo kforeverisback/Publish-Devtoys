@@ -9,7 +9,7 @@ public class SetPackageIdentityExecutor : AppxManifestEditExecutor<SetPackageIde
     {
     }
 
-    public event EventHandler<CommandValueChanged> ValueChanged;
+    public event EventHandler<CommandValueChanged>? ValueChanged;
 
     public override Task Execute(SetPackageIdentity command, CancellationToken cancellationToken = default)
     {
@@ -17,16 +17,16 @@ public class SetPackageIdentityExecutor : AppxManifestEditExecutor<SetPackageIde
         XName identityFullName = rootNamespace + "Identity";
 
 
-        XElement? identity = Manifest.Root.Element(identityFullName);
+        XElement? identity = Manifest.Root?.Element(identityFullName);
         if (identity == null)
         {
             identity = new XElement(rootNamespace + "Identity");
-            Manifest.Root.Add(identity);
+            Manifest.Root?.Add(identity);
         }
 
         if (command.Publisher != null)
         {
-            string validationError = AppxValidatorFactory.ValidateSubject()(command.Publisher);
+            string? validationError = AppxValidatorFactory.ValidateSubject()(command.Publisher);
             if (validationError != null)
             {
                 throw new ArgumentException(validationError, nameof(command));
@@ -50,7 +50,7 @@ public class SetPackageIdentityExecutor : AppxManifestEditExecutor<SetPackageIde
 
         if (command.Name != null)
         {
-            string validationError = AppxValidatorFactory.ValidatePackageName()(command.Name);
+            string? validationError = AppxValidatorFactory.ValidatePackageName()(command.Name);
             if (validationError != null)
             {
                 throw new ArgumentException(validationError, nameof(command));
@@ -78,7 +78,7 @@ public class SetPackageIdentityExecutor : AppxManifestEditExecutor<SetPackageIde
             if (attr == null)
             {
                 string newVersion = VersionStringOperations.ResolveMaskedVersion(command.Version);
-                string validationError = AppxValidatorFactory.ValidateVersion()(newVersion);
+                string? validationError = AppxValidatorFactory.ValidateVersion()(newVersion);
                 if (validationError != null)
                 {
                     throw new ArgumentException(validationError, nameof(command));
@@ -92,7 +92,7 @@ public class SetPackageIdentityExecutor : AppxManifestEditExecutor<SetPackageIde
             {
                 string newVersion = VersionStringOperations.ResolveMaskedVersion(command.Version, attr.Value);
 
-                string validationError = AppxValidatorFactory.ValidateVersion()(newVersion);
+                string? validationError = AppxValidatorFactory.ValidateVersion()(newVersion);
                 if (validationError != null)
                 {
                     throw new ArgumentException(validationError, nameof(command));
@@ -124,7 +124,7 @@ public class SetPackageIdentityExecutor : AppxManifestEditExecutor<SetPackageIde
 
         if (command.ResourceId != null)
         {
-            string validationError = AppxValidatorFactory.ValidateResourceId()(command.ResourceId);
+            string? validationError = AppxValidatorFactory.ValidateResourceId()(command.ResourceId);
             if (validationError != null)
             {
                 throw new ArgumentException(validationError, nameof(command));

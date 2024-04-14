@@ -38,7 +38,7 @@ public abstract class ExeWrapper
         Action<string>? callBack,
         CancellationToken cancellationToken = default)
     {
-        return RunAsync(path, arguments, null, (_, _, _) => string.Empty, callBack, cancellationToken);
+        return RunAsync(path, arguments, null, (_, _, _) => null, callBack, cancellationToken);
     }
 
     protected static Task RunAsync(
@@ -46,7 +46,7 @@ public abstract class ExeWrapper
         string arguments,
         CancellationToken cancellationToken = default)
     {
-        return RunAsync(path, arguments, null, (_, _, _) => string.Empty, default, cancellationToken);
+        return RunAsync(path, arguments, null, (_, _, _) => null, default, cancellationToken);
     }
 
     protected static Task RunAsync(
@@ -94,7 +94,7 @@ public abstract class ExeWrapper
                 return string.Format("Process exited with an improper exit code {0}.", code);
             }
 
-            return string.Empty;
+            return null;
         };
 
         return RunAsync(path, arguments, workingDirectory, errorChecker, callBack, cancellationToken);
@@ -217,7 +217,7 @@ public abstract class ExeWrapper
                 Log.Debug("Process has finished and did not return anything to standard error.");
             }
 
-            string error = errorDelegate(result, standardError, standardOutput);
+            string? error = errorDelegate(result, standardError, standardOutput);
             if (error == null)
             {
                 return;
@@ -236,7 +236,7 @@ public abstract class ExeWrapper
         return RunAsync(path, arguments, null, errorDelegate, callBack, cancellationToken);
     }
 
-    protected delegate string GetErrorMessageFromProcess(
+    protected delegate string? GetErrorMessageFromProcess(
         int exitCode,
         IList<string> standardOutput,
         IList<string> standardError);

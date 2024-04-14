@@ -82,7 +82,7 @@ internal static class GuiPackingWindows
 
         var progress = new Progress<ProgressData>(data =>
         {
-            Log.Information(data.Message);
+            Log.Debug(data.Message);
         });
 
         var sdk = new MakeAppxWrapper();
@@ -118,6 +118,24 @@ internal static class GuiPackingWindows
 
         AbsolutePath innoSetupScriptFile = binDirectory.Parent / $"devtoys_setup_{guiWindowsPublishBinariesBuilder.Architecture.PlatformTarget}.iss";
 
+        Architectures architectures;
+        if (guiWindowsPublishBinariesBuilder.Architecture == TargetCpuArchitecture.Windows_Arm64)
+        {
+            architectures = Architectures.Arm64;
+        }
+        else if (guiWindowsPublishBinariesBuilder.Architecture == TargetCpuArchitecture.Windows_X64)
+        {
+            architectures = Architectures.X64;
+        }
+        else if (guiWindowsPublishBinariesBuilder.Architecture == TargetCpuArchitecture.Windows_X86)
+        {
+            architectures = Architectures.X86;
+        }
+        else
+        {
+            throw new NotSupportedException($"Unsupported platform target: {guiWindowsPublishBinariesBuilder.Architecture.PlatformTarget}");
+        }
+
         BuilderUtils.Build(
             builder =>
             {
@@ -139,7 +157,7 @@ internal static class GuiPackingWindows
                     .Compression("lzma")
                     .SolidCompression(YesNo.Yes)
                     // Architecture
-                    .ArchitecturesAllowed(Architectures.X86 | Architectures.X64 | Architectures.Arm64)
+                    .ArchitecturesAllowed(architectures)
                     .ArchitecturesInstallIn64BitMode(ArchitecturesInstallIn64BitMode.X64 | ArchitecturesInstallIn64BitMode.Arm64)
                     // UX
                     .SetupIconFile(iconFile)

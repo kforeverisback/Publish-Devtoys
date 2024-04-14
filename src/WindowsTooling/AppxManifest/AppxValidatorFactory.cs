@@ -20,7 +20,7 @@ namespace WindowsTooling.AppxManifest;
 
 public static class AppxValidatorFactory
 {
-    public static Func<string, string> ValidateResourceId(bool required = true)
+    public static Func<string, string?> ValidateResourceId(bool required = true)
     {
         return value =>
         {
@@ -28,7 +28,7 @@ public static class AppxValidatorFactory
             {
                 if (!required)
                 {
-                    return string.Empty;
+                    return null;
                 }
 
                 return "The resource ID cannot be empty.";
@@ -48,7 +48,7 @@ public static class AppxValidatorFactory
         };
     }
 
-    public static Func<string, string> ValidatePackageName(bool required = true)
+    public static Func<string, string?> ValidatePackageName(bool required = true)
     {
         return value =>
         {
@@ -56,7 +56,7 @@ public static class AppxValidatorFactory
             {
                 if (!required)
                 {
-                    return string.Empty;
+                    return null;
                 }
 
                 return "The package name cannot be empty.";
@@ -76,7 +76,7 @@ public static class AppxValidatorFactory
         };
     }
 
-    public static Func<string, string> ValidateSubject(bool required = true)
+    public static Func<string, string?> ValidateSubject(bool required = true)
     {
         return value =>
         {
@@ -84,7 +84,7 @@ public static class AppxValidatorFactory
             {
                 if (!required)
                 {
-                    return string.Empty;
+                    return null;
                 }
 
                 return "The publisher cannot be empty.";
@@ -96,11 +96,11 @@ public static class AppxValidatorFactory
                 return "Publisher name must be a valid DN string (for example CN=Author)";
             }
 
-            return string.Empty;
+            return null;
         };
     }
 
-    public static Func<string, string> ValidateVersion(bool required = true)
+    public static Func<string, string?> ValidateVersion(bool required = true)
     {
         return version =>
         {
@@ -108,7 +108,7 @@ public static class AppxValidatorFactory
             {
                 if (!required)
                 {
-                    return string.Empty;
+                    return null;
                 }
 
                 return "The version cannot be empty.";
@@ -119,11 +119,11 @@ public static class AppxValidatorFactory
                 return "The version must be in format #.#.#.#.";
             }
 
-            return string.Empty;
+            return null;
         };
     }
 
-    private static string ValidateNameAndResourceIdSpecialKeywords(string value)
+    private static string? ValidateNameAndResourceIdSpecialKeywords(string value)
     {
         switch (value?.ToLowerInvariant())
         {
@@ -203,6 +203,6 @@ public static class AppxValidatorFactory
             return string.Format("The value '{0}' contains a restricted string '.xn--'.", value);
         }
 
-        return string.Empty;
+        return null;
     }
 }
