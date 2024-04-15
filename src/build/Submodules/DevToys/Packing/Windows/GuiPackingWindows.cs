@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Core;
+using Helper;
 using InnoSetup.ScriptBuilder;
 using Nuke.Common.IO;
 using Nuke.Common.Tooling;
@@ -21,20 +22,19 @@ internal static class GuiPackingWindows
 {
     internal static async Task PackAsync(AbsolutePath packDirectory, AbsolutePath devToysRepositoryDirectory, GuiWindowsPublishBinariesBuilder guiWindowsPublishBinariesBuilder)
     {
-        bool isPreview = true; // TODO
-
         packDirectory = packDirectory / guiWindowsPublishBinariesBuilder.Architecture.PlatformTarget;
 
         Zip(packDirectory, guiWindowsPublishBinariesBuilder);
-        CreateSetup(packDirectory, devToysRepositoryDirectory, guiWindowsPublishBinariesBuilder, isPreview);
-        await CreateMSIXAsync(packDirectory, guiWindowsPublishBinariesBuilder, isPreview);
+        CreateSetup(packDirectory, devToysRepositoryDirectory, guiWindowsPublishBinariesBuilder);
+        await CreateMSIXAsync(packDirectory, guiWindowsPublishBinariesBuilder);
     }
 
     private static void Zip(AbsolutePath packDirectory, GuiWindowsPublishBinariesBuilder guiWindowsPublishBinariesBuilder)
     {
         Log.Information("Zipping DevToys {architecutre}...", guiWindowsPublishBinariesBuilder.Architecture.RuntimeIdentifier);
 
-        AbsolutePath archiveFile = packDirectory / $"devtoys_win_{guiWindowsPublishBinariesBuilder.Architecture.PlatformTarget}_portable.zip";
+        string version = VersionHelper.GetVersionString(allowPreviewSyntax: true, excludeRevisionOrPreviewNumber: false);
+        AbsolutePath archiveFile = packDirectory / $"devtoys_win_{guiWindowsPublishBinariesBuilder.Architecture.PlatformTarget}_{version}_portable.zip";
 
         if (guiWindowsPublishBinariesBuilder.OutputPath.DirectoryExists())
         {
@@ -48,14 +48,15 @@ internal static class GuiPackingWindows
         Log.Information(string.Empty);
     }
 
-    private static void CreateSetup(AbsolutePath packDirectory, AbsolutePath devToysRepositoryDirectory, GuiWindowsPublishBinariesBuilder guiWindowsPublishBinariesBuilder, bool isPreview)
+    private static void CreateSetup(AbsolutePath packDirectory, AbsolutePath devToysRepositoryDirectory, GuiWindowsPublishBinariesBuilder guiWindowsPublishBinariesBuilder)
     {
         Log.Information("Creating installer for DevToys {architecutre}...", guiWindowsPublishBinariesBuilder.Architecture.RuntimeIdentifier);
 
+        string version = VersionHelper.GetVersionString(allowPreviewSyntax: true, excludeRevisionOrPreviewNumber: false);
         AbsolutePath innoSetupScriptFile
             = GenerateInnoSetupScript(
-                versionNumber: "2.0.0-prev.0", // TODO
-                isPreview,
+                version,
+                VersionHelper.IsPreview,
                 packDirectory,
                 devToysRepositoryDirectory,
                 guiWindowsPublishBinariesBuilder);
@@ -70,17 +71,17 @@ internal static class GuiPackingWindows
         Log.Information(string.Empty);
     }
 
-    private static async Task CreateMSIXAsync(AbsolutePath packDirectory, GuiWindowsPublishBinariesBuilder guiWindowsPublishBinariesBuilder, bool isPreview)
+    private static async Task CreateMSIXAsync(AbsolutePath packDirectory, GuiWindowsPublishBinariesBuilder guiWindowsPublishBinariesBuilder)
     {
         Log.Information("Creating Microsoft Store package for DevToys {architecutre}...", guiWindowsPublishBinariesBuilder.Architecture.RuntimeIdentifier);
 
+        string version = VersionHelper.GetVersionString(allowPreviewSyntax: true, excludeRevisionOrPreviewNumber: false);
         AbsolutePath sourceMappingFile
             = await CreateAppxManifestAsync(
-                versionNumber: "2.0.0-prev.0", // TODO
-                isPreview,
+                VersionHelper.IsPreview,
                 guiWindowsPublishBinariesBuilder);
 
-        AbsolutePath msixFile = packDirectory / $"devtoys_{guiWindowsPublishBinariesBuilder.Architecture.PlatformTarget}.msix";
+        AbsolutePath msixFile = packDirectory / $"devtoys_{guiWindowsPublishBinariesBuilder.Architecture.PlatformTarget}_{version}.msix";
 
         var progress = new Progress<ProgressData>(data =>
         {
@@ -120,7 +121,9 @@ internal static class GuiPackingWindows
 
         Architectures architectures;
         if (guiWindowsPublishBinariesBuilder.Architecture == TargetCpuArchitecture.Windows_Arm64)
+        {
             architectures = Architectures.Arm64;
+        }
         else if (guiWindowsPublishBinariesBuilder.Architecture == TargetCpuArchitecture.Windows_X64)
         {
             architectures = Architectures.X64;
@@ -195,7 +198,6 @@ internal static class GuiPackingWindows
     }
 
     private static async Task<AbsolutePath> CreateAppxManifestAsync(
-        string versionNumber,
         bool isPreview,
         GuiWindowsPublishBinariesBuilder guiWindowsPublishBinariesBuilder)
     {
@@ -238,7 +240,7 @@ internal static class GuiPackingWindows
             PackageDescription = "A Swiss Army knife for developers.",
             PublisherName = "CN=etiennebaudoux",
             PublisherDisplayName = "etiennebaudoux",
-            Version = new Version(0, 0, 0, 0) // TODO
+            Version = new Version(VersionHelper.Major, VersionHelper.Minor, VersionHelper.Build, VersionHelper.RevisionOrPreviewNumber)
         };
 
         var temporaryFiles = new List<string>();

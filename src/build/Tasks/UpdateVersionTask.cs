@@ -53,29 +53,37 @@ internal static class UpdateVersionTask
         {
             string plistFileContent = await File.ReadAllTextAsync(plistFile);
 
-            string bundleVersion = VersionHelper.GetVersionString(allowPreviewSyntax: false, excludeRevisionOrPreviewNumber: false);
-            string bundleShortVersionString = VersionHelper.GetVersionString(allowPreviewSyntax: false, excludeRevisionOrPreviewNumber: true);
-
-            string newPlistFileContent
-                = plistFileContent.Replace(
-                    "<key>CFBundleShortVersionString</key>\n\t<string>0.0.0</string>",
-                    $"<key>CFBundleShortVersionString</key>\n\t<string>{bundleShortVersionString}</string>");
-
-            newPlistFileContent
-                = newPlistFileContent.Replace(
-                    "<key>CFBundleVersion</key>\n\t<string>0</string>",
-                    $"<key>CFBundleVersion</key>\n\t<string>{bundleVersion}</string>");
-
-            await File.WriteAllTextAsync(plistFile, newPlistFileContent);
-
-            if (plistFileContent != newPlistFileContent)
+            if (plistFileContent.Contains("CFBundleVersion"))
             {
-                Log.Information("Updated {PlistFile}", plistFile);
-            }
-            else
-            {
-                Log.Error("Failed to update version number in {PlistFile}", plistFile);
-                throw new IOException("Failed to update version number in " + plistFile);
+                string bundleVersion = VersionHelper.GetVersionString(allowPreviewSyntax: false, excludeRevisionOrPreviewNumber: false);
+                string bundleShortVersionString = VersionHelper.GetVersionString(allowPreviewSyntax: false, excludeRevisionOrPreviewNumber: true);
+
+                string[] lines = plistFileContent.Split('\n');
+                for (int i = 0; i < lines.Length; i++)
+                {
+                    if (lines[i].Contains("<key>CFBundleShortVersionString</key>"))
+                    {
+                        lines[i + 1] = $"\t<string>{bundleShortVersionString}</string>";
+                    }
+                    else if (lines[i].Contains("<key>CFBundleVersion</key>"))
+                    {
+                        lines[i + 1] = $"\t<string>{bundleVersion}</string>";
+                    }
+                }
+
+                string newPlistFileContent = string.Join('\n', lines);
+
+                await File.WriteAllTextAsync(plistFile, newPlistFileContent);
+
+                if (plistFileContent != newPlistFileContent)
+                {
+                    Log.Information("Updated {PlistFile}", plistFile);
+                }
+                else
+                {
+                    Log.Error("Failed to update version number in {PlistFile}", plistFile);
+                    throw new IOException("Failed to update version number in " + plistFile);
+                }
             }
         }
     }
@@ -171,7 +179,7 @@ internal static class UpdateVersionTask
                     $"[assembly: AssemblyFileVersion(\"{assemblyVersion}\")]");
             newSharedAssemblyVersionFileContent
                 = newSharedAssemblyVersionFileContent.Replace(
-                    $"[assembly: AssemblyInformationalVersion(\"0.0.0.0\")]",
+                    $"[assembly: AssemblyInformationalVersion(\"0.0.0-pre.0\")]",
                     $"[assembly: AssemblyInformationalVersion(\"{assemblyInformationalVersion}\")]");
 
             await File.WriteAllTextAsync(sharedAssemblyVersionFile, newSharedAssemblyVersionFileContent);

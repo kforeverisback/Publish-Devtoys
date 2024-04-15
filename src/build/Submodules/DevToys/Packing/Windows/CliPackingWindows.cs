@@ -1,4 +1,5 @@
-﻿using Nuke.Common.IO;
+﻿using Helper;
+using Nuke.Common.IO;
 using Serilog;
 using Submodules.DevToys.PublishBinariesBuilders;
 
@@ -16,7 +17,11 @@ internal static class CliPackingWindows
             portable = "_portable";
         }
 
-        AbsolutePath archiveFile = packDirectory / cliPublishBinariesBuilder.Architecture.PlatformTarget / $"devtoys_cli_{cliPublishBinariesBuilder.Architecture.RuntimeIdentifier}{portable}.zip";
+        string version = VersionHelper.GetVersionString(allowPreviewSyntax: true, excludeRevisionOrPreviewNumber: false);
+        AbsolutePath archiveFile
+            = packDirectory
+            / cliPublishBinariesBuilder.Architecture.PlatformTarget 
+            / $"devtoys_cli_{cliPublishBinariesBuilder.Architecture.RuntimeIdentifier}_{version}{portable}.zip";
 
         if (cliPublishBinariesBuilder.OutputPath.DirectoryExists())
         {
