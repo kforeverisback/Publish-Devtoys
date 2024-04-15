@@ -18,6 +18,21 @@ internal class Build : NukeBuild
     [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
     private readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
 
+    [Parameter()]
+    private readonly int MajorVersion = 2;
+
+    [Parameter()]
+    private readonly int MinorVersion = 0;
+
+    [Parameter()]
+    private readonly int BuildNumber = 0;
+
+    [Parameter()]
+    private readonly int RevisionOrPreviewNumber = 0;
+
+    [Parameter()]
+    private readonly bool IsPreviewVersion = true;
+
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     [GitRepository]
     private readonly GitRepository Repository;
@@ -54,8 +69,20 @@ internal class Build : NukeBuild
             await GitTask.UpdateSubmodulesAsync();
         });
 
-    public Target Restore => _ => _
+    public Target UpdateVersion => _ => _
         .DependsOn(UpdateSubmodules)
+        .Description("Update version number.")
+        .Executes(
+            () => UpdateVersionTask.RunAsync(
+                MajorVersion,
+                MinorVersion,
+                BuildNumber,
+                RevisionOrPreviewNumber,
+                IsPreviewVersion,
+                Submodules));
+
+    public Target Restore => _ => _
+        .DependsOn(UpdateVersion)
         .Description("Restore dependencies.")
         .Executes(
             () => RestoreTask.RunAsync(Submodules));
@@ -81,6 +108,7 @@ internal class Build : NukeBuild
     public Target Pack => _ => _
         .DependsOn(CompilePublishBits)
         .Description(description: "Generate packages & installers.")
+        .Produces(RootDirectory / "artifacts" / "*")
         .Executes(
              () => PackPublishBinariesTask.RunAsync(RootDirectory, Submodules, Configuration));
 }

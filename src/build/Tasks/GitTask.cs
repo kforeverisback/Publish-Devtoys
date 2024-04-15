@@ -10,6 +10,9 @@ internal static class GitTask
     {
         try
         {
+            Log.Information("Revert local changes in submodules.");
+            await ShellHelper.RunCommandAsync("git submodule foreach --recursive git reset --hard");
+
             Log.Information("Clone submodules.");
             await ShellHelper.RunCommandAsync("git submodule update --init --recursive");
 

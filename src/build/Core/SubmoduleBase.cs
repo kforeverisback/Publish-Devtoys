@@ -12,7 +12,7 @@ internal abstract class SubmoduleBase
         RepositoryDirectory = repositoryDirectory;
     }
 
-    protected AbsolutePath RepositoryDirectory { get; }
+    internal AbsolutePath RepositoryDirectory { get; }
 
     internal string Name { get; }
 

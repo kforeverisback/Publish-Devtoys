@@ -6,6 +6,9 @@
     "build": {
       "type": "object",
       "properties": {
+        "BuildNumber": {
+          "type": "integer"
+        },
         "Configuration": {
           "type": "string",
           "description": "Configuration to build - Default is 'Debug' (local) or 'Release' (server)",
@@ -43,6 +46,15 @@
             "VSCode"
           ]
         },
+        "IsPreviewVersion": {
+          "type": "boolean"
+        },
+        "MajorVersion": {
+          "type": "integer"
+        },
+        "MinorVersion": {
+          "type": "integer"
+        },
         "NoLogo": {
           "type": "boolean",
           "description": "Disables displaying the NUKE logo"
@@ -62,6 +74,9 @@
             "type": "string"
           }
         },
+        "RevisionOrPreviewNumber": {
+          "type": "integer"
+        },
         "Root": {
           "type": "string",
           "description": "Root directory during build execution"
@@ -78,7 +93,8 @@
               "Pack",
               "Restore",
               "RunTests",
-              "UpdateSubmodules"
+              "UpdateSubmodules",
+              "UpdateVersion"
             ]
           }
         },
@@ -94,7 +110,8 @@
               "Pack",
               "Restore",
               "RunTests",
-              "UpdateSubmodules"
+              "UpdateSubmodules",
+              "UpdateVersion"
             ]
           }
         },
