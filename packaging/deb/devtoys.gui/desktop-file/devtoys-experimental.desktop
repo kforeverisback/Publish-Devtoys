@@ -1,0 +1,25 @@
+[Desktop Entry]
+Name=DevToys
+Comment=A Swiss Army knife for developers.
+GenericName=DevToys
+Exec=/usr/bin/DevToys
+Icon=/opt/microsoft/code-insiders/resources/app/resources/linux/code.png
+Type=Application
+StartupNotify=false
+Categories=Development;Utility;Office
+Keywords=devtoys
+
+# [Desktop Action new-empty-window]
+# Name=New Empty Window
+# Exec=/usr/local/bin/code-insiders --new-window %F
+# Icon=/opt/microsoft/code-insiders/resources/app/resources/linux/code.png
+# 
+# [Desktop Action Diff]
+# Name=Diff Two Files
+# Exec=/usr/local/bin/code-insiders --diff %F
+# Icon=/opt/microsoft/code-insiders/resources/app/resources/linux/code.png
+# 
+# [Desktop Action Open-Reuse-Window]
+# Name=Open in Existing Window
+# Exec=/usr/local/bin/code-insiders --reuse-window %F
+# Icon=/opt/microsoft/code-insiders/resources/app/resources/linux/code.png

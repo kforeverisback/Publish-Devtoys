@@ -1,0 +1,14 @@
+Source: devtoys.gui
+Section: devel
+Priority: optional
+Maintainer: Kushal Azim Ekram <kforeverisback@gmail.com>
+Build-Depends: debhelper (>= 10)
+
+Package: devtoys.gui
+Architecture: all
+Depends: ${misc:Depends}
+# TODO: not adding this since devtoys.cli is portable Depends: dotnet-8.0
+Description: Awesome tool.
+ . Something related to awesomeness
+ .
+ . This package contains the devtoys tool.
