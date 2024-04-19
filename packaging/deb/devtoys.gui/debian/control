@@ -7,7 +7,7 @@ Build-Depends: debhelper (>= 10)
 Package: devtoys.gui
 Architecture: all
 Depends: ${misc:Depends}
-# TODO: not adding this since devtoys.cli is portable Depends: dotnet-8.0
+# TODO: not adding this since devtoys.gui is portable Depends: dotnet-8.0
 Description: Awesome tool.
  . Something related to awesomeness
  .
