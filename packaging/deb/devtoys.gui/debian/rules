@@ -10,6 +10,7 @@ MKDIR:=/bin/mkdir # make directory command
 # Set some variables for our package
 SRC_DIR:=../../../publish/x64/DevToys.Linux-linux-x64-portable/
 DESKTOP_FILE_SRC_PATH:=./desktop-file/devtoys.desktop
+ICON_FILE_SRC_PATH:=../../../submodules/DevToys/assets/logo/Icon-Windows-Linux.png
 # Dir structure of package content: debian/${SRC_PKG_NAME}/opt/${SRC_PKG_ORG}/${SRC_PKG_NAME}
 # SRC_PKG_NAME: deb package name, same as in control and changelog files
 # SRC_PKG_ORG : is like an umbrella dir (company or org) for all different packages to put in
@@ -35,7 +36,8 @@ binary:
 	$(MKDIR) -p ${PACKAGE_DEST_DIR}
 	$(MKDIR) -p ${DESKTOP_FILE_DEST_DIR}
 	$(CP) -r ${SRC_DIR}/* ${PACKAGE_DEST_DIR}/
-	$(CP) -r ${DESKTOP_FILE_SRC_PATH} ${DESKTOP_FILE_DEST_DIR} # Copy the desktop file to the applications dir
+	$(CP) ${ICON_FILE_SRC_PATH} ${PACKAGE_DEST_DIR}/ # Copy the icon to the package dir
+	$(CP) ${DESKTOP_FILE_SRC_PATH} ${DESKTOP_FILE_DEST_DIR} # Copy the desktop file to the applications dir
 
 	@# dh_link -p${SRC_PKG_NAME} /opt/${SRC_PKG_ORG}/${SRC_PKG_NAME}/bin/devtoys /usr/bin/devtoys
 	@# Instead use the devtoys.gui.links to generate symlinks

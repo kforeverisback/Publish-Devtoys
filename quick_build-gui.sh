@@ -13,6 +13,7 @@ dotnet build submodules/DevToys/src/generators/ResxHelperGenerator/ResxHelperGen
 publish_dir=./publish/x64/DevToys.Linux-linux-x64-portable
 dotnet publish submodules/DevToys/src/app/dev/platforms/desktop/DevToys.Linux/DevToys.Linux.csproj -v minimal -c Release --nologo -o "$publish_dir" -r linux-x64 -f net8.0 --sc -p:DebugType=None -p:DebugSymbols=False
 
-cp submodules/DevToys/assets/logo/Icon-Windows-Linux.png "$publish_dir"
+# Copying it in the rules file
+#cp submodules/DevToys/assets/logo/Icon-Windows-Linux.png "$publish_dir"
 
 dotnet publish submodules/DevToys.Tools/src/DevToys.Tools/DevToys.Tools.csproj -v minimal -c Release --nologo -o "$publish_dir/Plugins/Devtoys.Tools" -r linux-x64 -f net8.0 -p:DebugType=None -p:DebugSymbols=False
