@@ -26,6 +26,7 @@ build:
 # No build, hence no clean
 clean:
 	@# Do nothing
+	dh_prep
 
 binary:
 	@# Some cleanups
@@ -38,6 +39,6 @@ binary:
 	dh_compress
 	dh_fixperms
 	@# TODO: dh_installdeb --> Not doing this since we don't have a fixed GPG keys yet
-	dh_gencontrol
+	dh_gencontrol -- -Tdebian/substvars # Substitue variables
 	dh_md5sums
 	dh_builddeb
