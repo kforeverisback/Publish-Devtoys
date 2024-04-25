@@ -21,6 +21,7 @@ DESKTOP_FILE_DEST_DIR:=debian/devtoys.gui/usr/share/applications/
 
 # TODO: For complete quick-info in rule system Visit : https://github.com/FooBarWidget/debian-packaging-for-the-modern-developer/blob/master/tutorial-5/README.md
 # TODO: For in-depth reference documentation Visit : https://www.debian.org/doc/manuals/maint-guide/ 
+# TODO: For debhelper (dh_*) functios visit        : https://manpages.debian.org/testing/debhelper/index.html
 
 # We're building outside of dpkg. So we don't need to do anything here
 build:
@@ -42,10 +43,11 @@ binary:
 
 	@# dh_link -p${SRC_PKG_NAME} /opt/${SRC_PKG_ORG}/${SRC_PKG_NAME}/bin/devtoys /usr/bin/devtoys
 	@# Instead use the devtoys.gui.links to generate symlinks
+	# dpkg-parsechangelog > debian/changelog
 	dh_link
 	dh_compress
 	dh_fixperms
 	@# TODO: dh_installdeb --> Not doing this since we don't have a fixed GPG keys yet
-	dh_gencontrol
+	dh_gencontrol -- -Tdebian/substvars # Substitue variables
 	dh_md5sums
 	dh_builddeb

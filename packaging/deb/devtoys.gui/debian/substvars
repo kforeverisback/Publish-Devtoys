@@ -1,0 +1,2 @@
+misc:Depends=libwebkitgtk-6.0-4
+misc:Pre-Depends=libwebkitgtk-6.0-4

@@ -1,12 +1,14 @@
 Source: devtoys.gui
 Section: devel
 Priority: optional
-Maintainer: Kushal Azim Ekram <kforeverisback@gmail.com>
+Author: Kushal Azim Ekram <kforeverisback@gmail.com>
+Maintainer: Étienne Baudoux < TODO:EMAIL >
 Build-Depends: debhelper (>= 10)
 
 Package: devtoys.gui
 Architecture: all
 Depends: ${misc:Depends}
+Pre-Depends: ${misc:Pre-Depends}
 # TODO: not adding this since devtoys.gui is portable Depends: dotnet-8.0
 Description: Awesome tool.
  . Something related to awesomeness
